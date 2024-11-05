@@ -8,8 +8,8 @@ Installation
 
 This Python package requires [Poetry](https://python-poetry.org/) to install
 dependencies. Run the following command in the root directory of the project.
-This will create a virtual environment with the required dependencies and in-
-stall the project in edit mode.
+This will create a virtual environment with the required dependencies and
+install the project in edit mode.
 
     poetry install
 
