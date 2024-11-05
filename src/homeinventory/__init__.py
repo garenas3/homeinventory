@@ -64,7 +64,7 @@ Use the `load` function to resume working at a later date.
 
     >>> inventory = homeinventory.load("inventory.csv")  # doctest:+SKIP
     >>> inventory  # doctest:+SKIP
-    {'Fruit': Box(name='Fruit' items=[...]), 'Nuts': Box(...)}
+    {'Fruit': Box(name='Fruit', items=[...]), 'Nuts': Box(...)}
 """
 from .common import Box
 from .common import save
