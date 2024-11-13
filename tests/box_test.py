@@ -1,26 +1,26 @@
 import pytest
 
-from homeinventory import Box, save, search, load
+from homeinventory import StringBox, save, search, load
 
 
 def test_newbox_empty():
-    box = Box("mybox")
+    box = StringBox("mybox")
     assert len(box) == 0
 
 
 def test_newbox_threeitems():
-    box = Box("mybox", items=["Item 1", "Item 2", "Item 3"])
+    box = StringBox("mybox", items=["Item 1", "Item 2", "Item 3"])
     assert len(box) == 3
 
 
 def test_newbox_name():
-    box = Box("mybox")
+    box = StringBox("mybox")
     assert box.name == "mybox"
 
 
 @pytest.fixture
 def boxfruit():
-    box = Box("Fruit")
+    box = StringBox("Fruit")
     box.add("Apples")
     box.add("Blueberries")
     box.add("Hazelnuts")
@@ -30,7 +30,7 @@ def boxfruit():
 
 @pytest.fixture
 def boxnuts():
-    box = Box("Nuts")
+    box = StringBox("Nuts")
     box.add("Almonds")
     box.add("Cashews")
     box.add("Hazelnuts")

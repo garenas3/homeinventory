@@ -2,29 +2,28 @@ import csv
 from typing import Iterable, Iterator
 
 
-class Box:
+class StringBox:
     """A collection of items to store in a box.
 
     Examples:
         Create an empty box.
 
-        >>> fruit_box = Box("Fruits")
+        >>> fruit_box = StringBox("Fruits")
         >>> fruit_box
-        Box(name='Fruits', items=[])
+        StringBox(name='Fruits', items=[])
 
         Create a box with pre-existing items.
 
-        >>> nut_box = Box("Nuts", ["Almonds", "Cashews", "Pecans"])
+        >>> nut_box = StringBox("Nuts", ["Almonds", "Cashews"])
         >>> nut_box
-        Box(name='Nuts', items=['Almonds', 'Cashews', 'Pecans'])
+        StringBox(name='Nuts', items=['Almonds', 'Cashews'])
 
         Add items to a box.
 
         >>> fruit_box.add("Apples")
         >>> fruit_box.add("Blueberries")
-        >>> fruit_box.add("Strawberries")
         >>> fruit_box
-        Box(name='Fruits', items=['Apples', 'Blueberries', 'Strawberries'])
+        StringBox(name='Fruits', items=['Apples', 'Blueberries'])
 
         """
 
@@ -43,7 +42,7 @@ class Box:
 
     def __repr__(self) -> str:
         """Return a string representation of the box."""
-        return f"Box(name={self.name!r}, items={self._items!r})"
+        return f"StringBox(name={self.name!r}, items={self._items!r})"
 
     def add(self, item: str) -> None:
         """Add an item to the box."""
@@ -71,7 +70,7 @@ class Box:
         return result
 
 
-def save(file: str, boxes: Iterable[Box]) -> None:
+def save(file: str, boxes: Iterable[StringBox]) -> None:
     """Save boxes to a new file.
 
     Args:
@@ -88,7 +87,7 @@ def save(file: str, boxes: Iterable[Box]) -> None:
                 boxwriter.writerow([box.name, item])
 
 
-def load(file: str) -> dict[str, Box]:
+def load(file: str) -> dict[str, StringBox]:
     """Load boxes from a file.
 
     Args:
@@ -100,16 +99,16 @@ def load(file: str) -> dict[str, Box]:
         box is used as the key of each entry. Each entry is a box with
         contents.
     """
-    result: dict[str, Box] = {}
+    result: dict[str, StringBox] = {}
     with open(file, newline="") as csvfile:
         boxreader = csv.reader(csvfile)
         next(boxreader)  # skip header row
         for boxname, item in boxreader:
-            result.setdefault(boxname, Box(boxname)).add(item)
+            result.setdefault(boxname, StringBox(boxname)).add(item)
     return result
 
 
-def search(boxes: Iterable[Box], sub: str) -> dict[str, list[str]]:
+def search(boxes: Iterable[StringBox], sub: str) -> dict[str, list[str]]:
     """Search for items in a set of boxes.
 
     Args:

@@ -3,28 +3,28 @@
 Import the project to begin.
 
 >>> import homeinventory
->>> from homeinventory import Box
+>>> from homeinventory import StringBox
 
 Create a box with a useful naming convention. For example, consider
 using a short description of the contents of each box.
 
->>> woodtools_box = Box("Wood Tools")
->>> cutlery_box = Box("Cutlery")
+>>> woodtools_box = StringBox("Wood Tools")
+>>> cutlery_box = StringBox("Cutlery")
 
 Or, use some sort of smart identifier.
 
->>> a1_box = Box("A1")
->>> a2_box = Box("A2")
->>> b1_box = Box("B1")
+>>> a1_box = StringBox("A1")
+>>> a2_box = StringBox("A2")
+>>> b1_box = StringBox("B1")
 
 The rest of this guide uses boxes containing food. Create an empty box
 by providing only the name.
 
->>> fruit_box = Box("Fruit")
+>>> fruit_box = StringBox("Fruit")
 
 A box can be intialized with contents if desired.
 
->>> nuts_box = Box("Nuts", ["Almonds", "Cashews", "Hazelnuts"])
+>>> nuts_box = StringBox("Nuts", ["Almonds", "Cashews", "Hazelnuts"])
 
 Add contents to a box one at a times using the `add` method.
 
@@ -38,7 +38,7 @@ Use the `remove` method to remove a single item from the box.
 
 >>> fruit_box.remove("Apricots")  # doctest:+ELLIPSIS
 >>> fruit_box
-Box(name='Fruit', items=['Apples', 'Hazelnuts', 'Raspberries', ...])
+StringBox(name='Fruit', items=['Apples', 'Hazelnuts', ...])
 
 To search for items, use the `search` method. This method performs a
 case-insensitive search.
@@ -64,16 +64,16 @@ Use the `load` function to resume working at a later date.
 
 >>> inventory = homeinventory.load("inventory.csv")  # doctest:+SKIP
 >>> inventory  # doctest:+SKIP
-{'Fruit': Box(name='Fruit', items=[...]), 'Nuts': Box(...)}
+{'Fruit': StringBox(name='Fruit', items=[...]), 'Nuts': StringBox(...)}
 """
-from .common import Box
+from .common import StringBox
 from .common import save
 from .common import load
 from .common import search
 
 
 __all__ = [
-    "Box",
+    "StringBox",
     "save",
     "load",
     "search",
