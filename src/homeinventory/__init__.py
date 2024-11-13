@@ -24,7 +24,7 @@ by providing only the name.
 
 A box can be intialized with contents if desired.
 
-    >>> nuts_box = Box("Nuts", ["Almonds", "Cashews", "Hazelnuts"])
+>>> nuts_box = Box("Nuts", ["Almonds", "Cashews", "Hazelnuts"])
 
 Add contents to a box one at a times using the `add` method.
 
