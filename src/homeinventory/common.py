@@ -103,8 +103,13 @@ def load(file: str) -> dict[str, StringBox]:
     with open(file, newline="") as csvfile:
         boxreader = csv.reader(csvfile)
         next(boxreader)  # skip header row
-        for boxname, item in boxreader:
-            result.setdefault(boxname, StringBox(boxname)).add(item)
+        try:
+            for boxname, item in boxreader:
+                result.setdefault(boxname, StringBox(boxname)).add(item)
+        except ValueError:
+            raise ValueError("Error while reading CSV file"
+                             f" line {boxreader.line_num}"
+                             )
     return result
 
 
