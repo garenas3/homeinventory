@@ -67,10 +67,10 @@ Use the `load` function to resume working at a later date.
 >>> inventory  # doctest:+SKIP
 {'Fruit': StringBox(name='Fruit', items=[...]), 'Nuts': StringBox(...)}
 """
-from .common import StringBox
 from .common import exportcsv
 from .common import importcsv
 from .common import search
+from .stringbox import StringBox
 
 
 __all__ = [
