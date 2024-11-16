@@ -128,4 +128,5 @@ def search(boxes: Iterable[StringBox], sub: str) -> dict[str, list[str]]:
         if there were no items found. A dictionary of all the boxes and
         items is returned if `sub` is empty.
     """
-    return {box.name: box.search(sub) for box in boxes}
+    result = {box.name: box.search(sub) for box in boxes}
+    return {key: value for key, value in result.items() if value} 
