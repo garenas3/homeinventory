@@ -1,7 +1,15 @@
 import csv
+from dataclasses import dataclass
 from typing import Iterable
 
 from .stringbox import StringBox
+
+
+@dataclass
+class Item:
+    """Attributes to describe an item."""
+    itemid: int
+    name: str
 
 
 def exportcsv(file: str, boxes: Iterable[StringBox]) -> None:
