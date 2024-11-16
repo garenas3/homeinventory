@@ -70,8 +70,8 @@ class StringBox:
         return result
 
 
-def save(file: str, boxes: Iterable[StringBox]) -> None:
-    """Save boxes to a new file.
+def exportcsv(file: str, boxes: Iterable[StringBox]) -> None:
+    """Save boxes to a new CSV file.
 
     Args:
         file: The path of the file to write. An existing file will be
@@ -87,8 +87,8 @@ def save(file: str, boxes: Iterable[StringBox]) -> None:
                 boxwriter.writerow([box.name, item])
 
 
-def load(file: str) -> dict[str, StringBox]:
-    """Load boxes from a file.
+def importcsv(file: str) -> dict[str, StringBox]:
+    """Load boxes from a CSV file.
 
     Args:
         file: The path of the file to read. The file is expected to be

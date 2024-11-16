@@ -1,6 +1,6 @@
 import pytest
 
-from homeinventory import StringBox, save, search, load
+from homeinventory import StringBox, exportcsv, search, importcsv
 
 
 def test_newbox_empty():
@@ -90,7 +90,7 @@ def test_boxsearch_caseinsensitive(boxfruit):
 
 def test_save(tmp_path, boxfruit):
     csvpath = tmp_path / "boxfruit.csv"
-    save(str(csvpath), [boxfruit])
+    exportcsv(str(csvpath), [boxfruit])
     linecount = 0
     with csvpath.open() as f:
         for _ in f:
@@ -100,8 +100,8 @@ def test_save(tmp_path, boxfruit):
 
 def test_load(tmp_path, boxfruit, boxnuts):
     csvpath = tmp_path / "boxes.csv"
-    save(str(csvpath), [boxfruit, boxnuts])
-    boxes = load(str(csvpath))
+    exportcsv(str(csvpath), [boxfruit, boxnuts])
+    boxes = importcsv(str(csvpath))
     assert len(boxes) == 2
     assert len(boxes["Fruit"]) == 4
 

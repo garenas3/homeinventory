@@ -53,28 +53,29 @@ once.
 {'Fruit': ['Hazelnuts'], 'Nuts': ['Hazelnuts']}
 
 For a home inventory system like this to be useful, it must be saved to
-a file. Save the information to a CSV file using the `save` function.
+a file. Save the information to a CSV file using the `exportcsv`
+function.
 
->>> homeinventory.save(  # doctest:+SKIP
+>>> homeinventory.exportcsv(  # doctest:+SKIP
 ...     "inventory.csv", 
 ...     [fruit_box, nuts_box]
 ... )
 
 Use the `load` function to resume working at a later date.
 
->>> inventory = homeinventory.load("inventory.csv")  # doctest:+SKIP
+>>> inventory = homeinventory.importcsv("inventory.csv")  # doctest:+SKIP
 >>> inventory  # doctest:+SKIP
 {'Fruit': StringBox(name='Fruit', items=[...]), 'Nuts': StringBox(...)}
 """
 from .common import StringBox
-from .common import save
-from .common import load
+from .common import exportcsv
+from .common import importcsv
 from .common import search
 
 
 __all__ = [
     "StringBox",
-    "save",
-    "load",
+    "exportcsv",
+    "importcsv",
     "search",
 ]
