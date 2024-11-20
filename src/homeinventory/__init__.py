@@ -69,7 +69,7 @@ Use the `load` function to resume working at a later date.
 """
 from .common import exportcsv
 from .common import importcsv
-from .common import search
+from .common import searchboxes
 from .stringbox import StringBox
 
 
@@ -77,5 +77,5 @@ __all__ = [
     "StringBox",
     "exportcsv",
     "importcsv",
-    "search",
+    "searchboxes",
 ]

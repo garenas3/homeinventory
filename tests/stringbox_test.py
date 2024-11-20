@@ -1,6 +1,6 @@
 import pytest
 
-from homeinventory import StringBox, exportcsv, search, importcsv
+from homeinventory import StringBox, exportcsv, searchboxes, importcsv
 
 
 def test_newbox_empty():
@@ -107,5 +107,5 @@ def test_load(tmp_path, boxfruit, boxnuts):
 
 
 def test_search(boxfruit, boxnuts):
-    matches = search([boxfruit, boxnuts], "Hazelnuts")
+    matches = searchboxes([boxfruit, boxnuts], "Hazelnuts")
     assert len(matches) == 2

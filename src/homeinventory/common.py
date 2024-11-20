@@ -54,7 +54,7 @@ def importcsv(file: str) -> dict[str, StringBox]:
     return result
 
 
-def search(boxes: Iterable[StringBox], sub: str) -> dict[str, list[str]]:
+def searchboxes(boxes: Iterable[StringBox], sub: str) -> dict[str, list[str]]:
     """Search for items in a set of boxes.
 
     Args:
