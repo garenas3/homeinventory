@@ -32,6 +32,10 @@ class SearchWidget(ttk.Frame):
         self.on_submit(self._search_entry.get())
 
 
+class BoxView(ttk.Widget):
+    pass
+
+
 class Application:
     boxes: dict[str, StringBox] = {}
 
@@ -46,13 +50,19 @@ class Application:
         self._mainframe.columnconfigure(0, weight=1)
         self._mainframe.rowconfigure(0, weight=0)
         self._mainframe.rowconfigure(1, weight=1)
+        self._mainframe.rowconfigure(2, weight=1)
 
         self._searchwidget = SearchWidget(self._mainframe, padding="0 0 0 5")
         self._searchwidget.grid(column=0, row=0, sticky="ew")
         self._searchwidget.on_submit = self.displayboxes
 
-        self._boxview = ttk.Treeview(self._mainframe, show="tree")
+        self._boxview = ttk.Treeview(self._mainframe, padding="0 0 0 5",
+                                     show="tree")
         self._boxview.grid(column=0, row=1, sticky="nsew")
+
+        self._buttonframe = ttk.Frame(self._mainframe)
+        self._buttonframe.grid(column=0, row=2, sticky="ew")
+        # TODO: Add main buttons.
 
     def displayboxes(self, itemfilter: str = "") -> None:
         for child in self._boxview.get_children():
@@ -76,7 +86,6 @@ def main() -> None:
     args = parser.parse_args()
 
     app = Application()
-    app.boxes = importcsv(args.filename)
     app.displayboxes()
     app.mainloop()
 
