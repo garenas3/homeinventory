@@ -49,7 +49,7 @@ case-insensitive search.
 The module level search method can be used to search multiple boxes at
 once.
 
->>> homeinventory.search([fruit_box, nuts_box], "hazelnuts")
+>>> homeinventory.searchboxes([fruit_box, nuts_box], "hazelnuts")
 {'Fruit': ['Hazelnuts'], 'Nuts': ['Hazelnuts']}
 
 For a home inventory system like this to be useful, it must be saved to
@@ -67,9 +67,9 @@ Use the `load` function to resume working at a later date.
 >>> inventory  # doctest:+SKIP
 {'Fruit': StringBox(name='Fruit', items=[...]), 'Nuts': StringBox(...)}
 """
-from .common import exportcsv
-from .common import importcsv
-from .common import searchboxes
+from .stringboxutil import exportcsv
+from .stringboxutil import importcsv
+from .stringboxutil import searchboxes
 from .stringbox import StringBox
 
 

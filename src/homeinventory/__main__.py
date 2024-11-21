@@ -3,8 +3,8 @@ from collections.abc import Callable
 import tkinter as tk
 from tkinter import ttk
 
-from .common import importcsv, searchboxes
 from .stringbox import StringBox
+from .stringboxutil import searchboxes
 
 
 class SearchWidget(ttk.Frame):
