@@ -1,3 +1,4 @@
+"""Common home inventory classes and functions."""
 from dataclasses import dataclass
 
 
@@ -26,4 +27,5 @@ class InventoryItemGroup:
 
 class InventoryItemBox:
     """A collection of items stored in a box."""
-    pass
+    def __init__(self) -> None:
+        pass
