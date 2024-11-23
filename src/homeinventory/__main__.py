@@ -1,44 +1,208 @@
 import argparse
+import collections
 from collections.abc import Callable
 import tkinter as tk
 from tkinter import ttk
 
-from .stringbox import StringBox
-from .stringboxutil import searchboxes
+from .common import InventoryItem, InventoryItemUnit
 
 
-class SearchWidget(ttk.Frame):
-    on_submit: Callable[[str], None]
+class LineEditWidget:
+    """A line edit with a label."""
+    def __init__(self, parent, label: str) -> None:
+        self._mainframe = ttk.Frame(parent)
+        self._mainframe.columnconfigure(0, weight=1)
+        self._mainframe.rowconfigure(0, weight=1)
+        self._mainframe.rowconfigure(1, weight=1)
 
-    def __init__(self, master=None, **kwargs) -> None:
-        super().__init__(master, **kwargs)
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
-        self.columnconfigure(2, weight=0)
-        self.rowconfigure(0, weight=1)
+        self._label = ttk.Label(self._mainframe, text=label)
+        self._label.grid(column=0, row=0, sticky="w")
 
-        self._search_label = ttk.Label(self, text="Search")
-        self._search_label.grid(column=0, row=0, sticky="e")
+        self._entry = ttk.Entry(self._mainframe)
+        self._entry.grid(column=0, row=1, sticky="ew")
 
-        self._search_entry = ttk.Entry(self)
-        self._search_entry.grid(column=1, row=0, sticky="ew")
-        self._search_entry.bind('<Return>', lambda _: self._on_submit())
+    def grid(self, column: int, row: int, sticky: str) -> None:
+        """Placement and behavior on grid."""
+        self._mainframe.grid(column=column, row=row, sticky=sticky)
 
-        self._submit_button = ttk.Button(self, text="Submit")
-        self._submit_button.grid(column=2, row=0)
-        self._submit_button.configure(command=self._on_submit)
-
-    def _on_submit(self) -> None:
-        self.on_submit(self._search_entry.get())
+    @property
+    def value(self) -> str:
+        """Contents of the text box."""
+        return self._entry.get()
 
 
-class BoxView(ttk.Widget):
-    pass
+class ComboBoxWidget:
+    """Choice selection with a label."""
+    def __init__(self, parent, label: str) -> None:
+        self._mainframe = ttk.Frame(parent)
+        self._mainframe.columnconfigure(0, weight=1)
+        self._mainframe.rowconfigure(0, weight=1)
+        self._mainframe.rowconfigure(1, weight=1)
+
+        self._label = ttk.Label(self._mainframe, text=label)
+        self._label.grid(column=0, row=0, sticky="w")
+
+        self._combobox = ttk.Combobox(self._mainframe)
+        self._combobox.grid(column=0, row=1, sticky="ew")
+
+    def grid(self, column: int, row: int, sticky: str) -> None:
+        """Placement and behavior on grid."""
+        self._mainframe.grid(column=column, row=row, sticky=sticky)
+
+    def setchoices(self, choices: list[str] | tuple[str]) -> None:
+        """Update the list of choices."""
+        self._combobox.configure(values=choices)
+
+    @property
+    def value(self) -> str:
+        """Contents of the text box."""
+        return self._combobox.get()
+
+
+class PlainTextBoxWidget:
+    """Plain text box with label."""
+    def __init__(self, parent, label: str) -> None:
+        self._mainframe = ttk.Frame(parent)
+        self._mainframe.columnconfigure(0, weight=1)
+        self._mainframe.rowconfigure(0, weight=1)
+        self._mainframe.rowconfigure(1, weight=1)
+
+        self._label = ttk.Label(self._mainframe, text=label)
+        self._label.grid(column=0, row=0, sticky="w")
+
+        self._textbox = tk.Text(self._mainframe)
+        self._textbox.grid(column=0, row=1, sticky="ew")
+
+    def grid(self, *, column: int, row: int, sticky: str,
+             columnspan: int = 1) -> None:
+        """Placement and behavior on grid."""
+        self._mainframe.grid(column=column, row=row, sticky=sticky,
+                             columnspan=columnspan)
+
+    @property
+    def value(self) -> str:
+        """Contents of the text box."""
+        return self._textbox.get("1.0", "end")
+
+
+class ButtonWidget:
+    """A button with text."""
+    def __init__(self, parent, text: str) -> None:
+        self._button = ttk.Button(parent, text=text)
+        self._command: Callable[[], None] | None = None
+
+    @property
+    def command(self) -> Callable[[], None] | None:
+        """Callback for button press."""
+        return self._command
+
+    @command.setter
+    def command(self, value) -> None:
+        """Callback for button press."""
+        self._command = value
+        self._button.configure(command=value)
+
+    def grid(self, column: int, row: int, sticky: str) -> None:
+        """Placement and behavior on grid."""
+        self._button.grid(column=column, row=row, sticky=sticky)
+
+
+class ButtonGroupWidget:
+    """A group of buttons."""
+    def __init__(self, parent) -> None:
+        self._mainframe = ttk.Frame(parent)
+        self._mainframe.columnconfigure(0, weight=1)
+        self._mainframe.rowconfigure(0, weight=1)
+        
+        self._buttons: dict[str, ButtonWidget] = {}
+        self._currentcolumn: int = 0
+
+    def __getitem__(self, key) -> ButtonWidget:
+        """Get button with label."""
+        if key not in self._buttons:
+            self.addbutton(key)
+        return self._buttons[key]
+
+    def grid(self, column: int, row: int, sticky: str,
+             columnspan=1) -> None:
+        """Placement and behavior on grid."""
+        self._mainframe.grid(column=column, row=row, sticky=sticky,
+                             columnspan=columnspan)
+
+    def addbutton(self, text: str) -> None:
+        """Add a button to the group by providing only its text."""
+        self._mainframe.columnconfigure(self._currentcolumn+1, weight=0)
+        newbutton = ButtonWidget(self._mainframe, text=text)
+        newbutton.grid(row=0, column=self._currentcolumn+1, sticky="e")
+        self._buttons[text] = newbutton
+        self._currentcolumn += 1
+
+
+class StatusBarWidget:
+    """Information about the application."""
+    def __init__(self, parent) -> None:
+        self._mainframe = ttk.Frame(parent)
+        self._mainframe.columnconfigure(0, weight=1)
+        self._mainframe.rowconfigure(0, weight=1)
+
+        self._text = ttk.Label(self._mainframe)
+        self._text.grid(column=0, row=0, sticky="w")
+
+    def grid(self, column: int, row: int, sticky: str,
+             columnspan=1) -> None:
+        """Placement and behavior on grid."""
+        self._mainframe.grid(column=column, row=row, sticky=sticky,
+                             columnspan=columnspan)
+
+    @property
+    def text(self) -> str:
+        """Current text in the status bar."""
+        return self._text.cget("text")
+
+    @text.setter
+    def text(self, value) -> None:
+        """Update status bar text."""
+        self._text.configure(text=value)
+
+
+class AddItemForm:
+    """A form to add items to a database."""
+    def __init__(self, parent) -> None:
+        self._mainframe = ttk.Frame(parent)
+        self._mainframe.columnconfigure(0, weight=1)
+        self._mainframe.columnconfigure(1, weight=1)
+        self._mainframe.rowconfigure(0, weight=1)
+        self._mainframe.rowconfigure(1, weight=1)
+        self._mainframe.rowconfigure(2, weight=1)
+        self._mainframe.rowconfigure(3, weight=1)
+
+        self.nameinput = LineEditWidget(self._mainframe, "Name")
+        self.nameinput.grid(column=0, row=0, sticky="nsew")
+
+        self.unitsselect = ComboBoxWidget(self._mainframe, "Units")
+        self.unitsselect.setchoices(["each", "inches", "feet"])
+        self.unitsselect.grid(column=1, row=0, sticky="nsew")
+
+        self.descriptioninput = PlainTextBoxWidget(self._mainframe,
+                                                   "Description")
+        self.descriptioninput.grid(column=0, row=1, sticky="ew", columnspan=2)
+
+        self._buttongroup = ButtonGroupWidget(self._mainframe)
+        self._buttongroup["Clear All"].command = lambda: print("Hello!")
+        self._buttongroup["Add"].command = lambda: print("Hello!")
+        self._buttongroup.grid(column=0, row=2, sticky="ew", columnspan=2)
+
+        self._statusbar = StatusBarWidget(self._mainframe)
+        self._statusbar.text = "Hello, World!"
+        self._statusbar.grid(column=0, row=3, sticky="ew", columnspan=2)
+
+    def grid(self, column: int, row: int, sticky: str) -> None:
+        """Placement and behavior on grid."""
+        self._mainframe.grid(column=column, row=row, sticky=sticky)
 
 
 class Application:
-    boxes: dict[str, StringBox] = {}
-
+    """Main class to handle GUI."""
     def __init__(self) -> None:
         self._root = tk.Tk()
         self._root.title("Home Inventory")
@@ -49,29 +213,9 @@ class Application:
         self._mainframe.grid(column=0, row=0, sticky="nsew")
         self._mainframe.columnconfigure(0, weight=1)
         self._mainframe.rowconfigure(0, weight=0)
-        self._mainframe.rowconfigure(1, weight=1)
-        self._mainframe.rowconfigure(2, weight=1)
 
-        self._searchwidget = SearchWidget(self._mainframe, padding="0 0 0 5")
-        self._searchwidget.grid(column=0, row=0, sticky="ew")
-        self._searchwidget.on_submit = self.displayboxes
-
-        self._boxview = ttk.Treeview(self._mainframe, padding="0 0 0 5",
-                                     show="tree")
-        self._boxview.grid(column=0, row=1, sticky="nsew")
-
-        self._buttonframe = ttk.Frame(self._mainframe)
-        self._buttonframe.grid(column=0, row=2, sticky="ew")
-        # TODO: Add main buttons.
-
-    def displayboxes(self, itemfilter: str = "") -> None:
-        for child in self._boxview.get_children():
-            self._boxview.delete(child)
-        boxes = searchboxes(self.boxes.values(), itemfilter)
-        for boxname, box in boxes.items():
-            boxid = self._boxview.insert("", "end", text=boxname)
-            for item in box:
-                self._boxview.insert(boxid, "end", text=item)
+        self._additemform = AddItemForm(self._mainframe)
+        self._additemform.grid(column=0, row=0, sticky="nsew")
 
     def mainloop(self) -> None:
         self._root.mainloop()
@@ -83,10 +227,8 @@ def main() -> None:
         description="Manage a home inventory."
         )
     parser.add_argument("filename")
-    args = parser.parse_args()
 
     app = Application()
-    app.displayboxes()
     app.mainloop()
 
 
