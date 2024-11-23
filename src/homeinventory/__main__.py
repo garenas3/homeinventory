@@ -4,7 +4,7 @@ from collections.abc import Callable
 import tkinter as tk
 from tkinter import ttk
 
-from .common import InventoryItem, InventoryItemUnit
+from .common import InventoryItem
 
 
 class LineEditWidget:
@@ -21,9 +21,11 @@ class LineEditWidget:
         self._entry = ttk.Entry(self._mainframe)
         self._entry.grid(column=0, row=1, sticky="ew")
 
-    def grid(self, column: int, row: int, sticky: str) -> None:
+    def grid(self, column: int, row: int, sticky: str,
+             columnspan=1) -> None:
         """Placement and behavior on grid."""
-        self._mainframe.grid(column=column, row=row, sticky=sticky)
+        self._mainframe.grid(column=column, row=row, sticky=sticky,
+                             columnspan=columnspan)
 
     @property
     def value(self) -> str:
@@ -45,44 +47,26 @@ class ComboBoxWidget:
         self._combobox = ttk.Combobox(self._mainframe)
         self._combobox.grid(column=0, row=1, sticky="ew")
 
+        self._choices: list[str] = []
+
     def grid(self, column: int, row: int, sticky: str) -> None:
         """Placement and behavior on grid."""
         self._mainframe.grid(column=column, row=row, sticky=sticky)
 
-    def setchoices(self, choices: list[str] | tuple[str]) -> None:
+    @property
+    def choices(self) -> list[str]:
+        """The list of choices."""
+        return self._choices.copy()
+
+    @choices.setter
+    def choices(self, values: list[str]) -> None:
         """Update the list of choices."""
-        self._combobox.configure(values=choices)
+        self._combobox.configure(values=values)
 
     @property
     def value(self) -> str:
         """Contents of the text box."""
         return self._combobox.get()
-
-
-class PlainTextBoxWidget:
-    """Plain text box with label."""
-    def __init__(self, parent, label: str) -> None:
-        self._mainframe = ttk.Frame(parent)
-        self._mainframe.columnconfigure(0, weight=1)
-        self._mainframe.rowconfigure(0, weight=1)
-        self._mainframe.rowconfigure(1, weight=1)
-
-        self._label = ttk.Label(self._mainframe, text=label)
-        self._label.grid(column=0, row=0, sticky="w")
-
-        self._textbox = tk.Text(self._mainframe)
-        self._textbox.grid(column=0, row=1, sticky="ew")
-
-    def grid(self, *, column: int, row: int, sticky: str,
-             columnspan: int = 1) -> None:
-        """Placement and behavior on grid."""
-        self._mainframe.grid(column=column, row=row, sticky=sticky,
-                             columnspan=columnspan)
-
-    @property
-    def value(self) -> str:
-        """Contents of the text box."""
-        return self._textbox.get("1.0", "end")
 
 
 class ButtonWidget:
@@ -176,25 +160,25 @@ class AddItemForm:
         self._mainframe.rowconfigure(2, weight=1)
         self._mainframe.rowconfigure(3, weight=1)
 
-        self.nameinput = LineEditWidget(self._mainframe, "Name")
-        self.nameinput.grid(column=0, row=0, sticky="nsew")
+        self._nameinput = LineEditWidget(self._mainframe, "Name")
+        self._nameinput.grid(column=0, row=0, sticky="nsew")
 
-        self.unitsselect = ComboBoxWidget(self._mainframe, "Units")
-        self.unitsselect.setchoices(["each", "inches", "feet"])
-        self.unitsselect.grid(column=1, row=0, sticky="nsew")
+        self._unitsselect = ComboBoxWidget(self._mainframe, "Units")
+        self._units = {
+            "each": ("each", "ea"),
+            "inches": ("inches", "in"),
+            "feet": ("feet", "ft"),
+            }
+        self._unitsselect.choices = [key for key in self._units]
+        self._unitsselect.grid(column=1, row=0, sticky="nsew")
 
-        self.descriptioninput = PlainTextBoxWidget(self._mainframe,
-                                                   "Description")
-        self.descriptioninput.grid(column=0, row=1, sticky="ew", columnspan=2)
+        self._descriptioninput = LineEditWidget(self._mainframe, "Description")
+        self._descriptioninput.grid(column=0, row=1, sticky="ew", columnspan=2)
 
         self._buttongroup = ButtonGroupWidget(self._mainframe)
-        self._buttongroup["Clear All"].command = lambda: print("Hello!")
-        self._buttongroup["Add"].command = lambda: print("Hello!")
+        self._buttongroup["Reset"].command = lambda: print("Reset pressed.")
+        self._buttongroup["Add"].command = lambda: print("Add pressed.")
         self._buttongroup.grid(column=0, row=2, sticky="ew", columnspan=2)
-
-        self._statusbar = StatusBarWidget(self._mainframe)
-        self._statusbar.text = "Hello, World!"
-        self._statusbar.grid(column=0, row=3, sticky="ew", columnspan=2)
 
     def grid(self, column: int, row: int, sticky: str) -> None:
         """Placement and behavior on grid."""
@@ -216,6 +200,10 @@ class Application:
 
         self._additemform = AddItemForm(self._mainframe)
         self._additemform.grid(column=0, row=0, sticky="nsew")
+
+        self._statusbar = StatusBarWidget(self._mainframe)
+        self._statusbar.text = "Ready."
+        self._statusbar.grid(column=0, row=3, sticky="ew", columnspan=2)
 
     def mainloop(self) -> None:
         self._root.mainloop()

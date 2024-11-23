@@ -18,13 +18,6 @@ class InventoryItem:
     unit: InventoryItemUnit
 
 
-@dataclass
-class InventoryItemGroup:
-    """Metadata for a items in a box."""
-    item: InventoryItem
-    quantity: float
-
-
 class InventoryItemBox:
     """A collection of items stored in a box."""
     def __init__(self) -> None:
