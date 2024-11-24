@@ -15,8 +15,8 @@ class InventoryItem:
     """Attributes to describe an item."""
     itemid: int
     name: str
-    description: str
     unit: InventoryItemUnit
+    description: str
 
 
 class InventoryItemBox:

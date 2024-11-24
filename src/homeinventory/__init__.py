@@ -67,6 +67,8 @@ Use the `load` function to resume working at a later date.
 >>> inventory  # doctest:+SKIP
 {'Fruit': StringBox(name='Fruit', items=[...]), 'Nuts': StringBox(...)}
 """
+from .common import InventoryItem
+from .common import InventoryItemUnit
 from .stringboxutil import exportcsv
 from .stringboxutil import importcsv
 from .stringboxutil import searchboxes
@@ -74,6 +76,8 @@ from .stringbox import StringBox
 
 
 __all__ = [
+    "InventoryItem",
+    "InventoryItemUnit",
     "StringBox",
     "exportcsv",
     "importcsv",
