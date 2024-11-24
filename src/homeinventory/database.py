@@ -64,20 +64,16 @@ class InventoryDatabase:
         if not self.connection:
             raise DatabaseNotConnectedError
         cursor = self.connection.cursor()
-        result = []
-        for row in cursor.execute("SELECT * FROM InventoryItem"):
-            result.append(InventoryItem(*row))
-        return result
+        resultset = cursor.execute("SELECT * FROM InventoryItem")
+        return [InventoryItem(*row) for row in resultset]
 
     def fetchall_inventoryitemunit(self) -> list[InventoryItemUnit]:
         """Get all inventory items from the database."""
         if not self.connection:
             raise DatabaseNotConnectedError
         cursor = self.connection.cursor()
-        result = []
-        for row in cursor.execute("SELECT * FROM InventoryItemUnit"):
-            result.append(InventoryItemUnit(*row))
-        return result
+        resultset = cursor.execute("SELECT * FROM InventoryItemUnit")
+        return [InventoryItemUnit(*row) for row in resultset]
 
     def open(self, filename: str) -> None:
         """Open the database."""
