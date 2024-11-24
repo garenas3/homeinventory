@@ -4,14 +4,30 @@ from tkinter import ttk
 
 
 class LineEdit:
-    """A line edit with a label."""
-    def __init__(self, parent, label: str) -> None:
+    """A line edit with a label.
+
+    A line edit is a text box that accepts a single line of input. A
+    label above the text box gives the line edit a name and helps the
+    user identify its purpose.
+
+    Example:
+        Create a line edit with the label "Name".
+
+            self.mainframe = ttk.Frame(parent)
+            self.nameinput = LineEdit(self.mainframe, "Name")
+            self.nameinput.grid(column=0, row=0, sticky="nsew")
+
+        Use the `value` property to get the current input text.
+            
+            name = self.nameinput.value
+    """
+    def __init__(self, parent, labeltext: str) -> None:
         self.mainframe = ttk.Frame(parent)
         self.mainframe.columnconfigure(0, weight=1)
         self.mainframe.rowconfigure(0, weight=1)
         self.mainframe.rowconfigure(1, weight=1)
 
-        self.label = ttk.Label(self.mainframe, text=label)
+        self.label = ttk.Label(self.mainframe, text=labeltext)
         self.label.grid(column=0, row=0, sticky="w")
 
         self.entry = ttk.Entry(self.mainframe)
@@ -30,14 +46,39 @@ class LineEdit:
 
 
 class ComboBox:
-    """Choice selection with a label."""
-    def __init__(self, parent, label: str) -> None:
+    """Choice selection with a label.
+
+    A combo box features a drop down containing a list of items. One of
+    the items can be selected. If an item is not on the list, the user
+    can use the line edit to enter custom text instead if allowed.
+
+    Example:
+        Create a combo box with the label "Unit".
+
+            self.mainframe = ttk.Frame(parent)
+            self.unitselect = ComboBox(self.mainframe, "Unit")
+            self.unitselect.grid(column=1, row=0, sticky="nsew")
+
+        The list of items can be updated using the `choices` property.
+
+            self.units = {
+                "each": ("each", "ea"),
+                "inches": ("inches", "in"),
+                "feet": ("feet", "ft"),
+                }
+            self.unitselect.choices = [key for key in self.units]
+
+        Use the `value` property to get the current selection.
+
+            unit = self.unitselected.value
+    """
+    def __init__(self, parent, labeltext: str) -> None:
         self.mainframe = ttk.Frame(parent)
         self.mainframe.columnconfigure(0, weight=1)
         self.mainframe.rowconfigure(0, weight=1)
         self.mainframe.rowconfigure(1, weight=1)
 
-        self.label = ttk.Label(self.mainframe, text=label)
+        self.label = ttk.Label(self.mainframe, text=labeltext)
         self.label.grid(column=0, row=0, sticky="w")
 
         self.combobox = ttk.Combobox(self.mainframe)
@@ -66,7 +107,23 @@ class ComboBox:
 
 
 class Button:
-    """A button with text."""
+    """A button with text.
+    
+    A button can be clicked by the user to initiate a command. A
+    command can be either a function or lambda with no arguments.
+
+    Example:
+        Create a submit button.
+
+            self.mainframe = ttk.Frame(parent)
+            submitbutton = Button(self.mainframe, text="Submit")
+            submitbutton.grid(row=0, column=1, sticky="e")
+
+        By assigning a lambda to the `command` property, clicking the
+        button will print "Form submitted!" to the console.
+
+            submitbutton.command = lambda: print("Form submitted!")
+    """
     def __init__(self, parent, text: str) -> None:
         self.button = ttk.Button(parent, text=text)
         self._command: Callable[[], None] | None = None
@@ -159,14 +216,14 @@ class AddInventoryItem:
         self.nameinput = LineEdit(self.mainframe, "Name")
         self.nameinput.grid(column=0, row=0, sticky="nsew")
 
-        self.unitsselect = ComboBox(self.mainframe, "Units")
+        self.unitselect = ComboBox(self.mainframe, "Unit")
+        self.unitselect.grid(column=1, row=0, sticky="nsew")
         self.units = {
             "each": ("each", "ea"),
             "inches": ("inches", "in"),
             "feet": ("feet", "ft"),
             }
-        self.unitsselect.choices = [key for key in self.units]
-        self.unitsselect.grid(column=1, row=0, sticky="nsew")
+        self.unitselect.choices = [key for key in self.units]
 
         self.descriptioninput = LineEdit(self.mainframe, "Description")
         self.descriptioninput.grid(column=0, row=1, sticky="ew", columnspan=2)
