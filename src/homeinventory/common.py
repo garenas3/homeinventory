@@ -5,6 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class InventoryItemUnit:
     """Unit of measure for an item."""
+    unitid: int
     name: str
     symbol: str
 
