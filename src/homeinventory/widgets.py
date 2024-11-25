@@ -33,8 +33,7 @@ class LineEdit:
         self.entry = ttk.Entry(self.mainframe)
         self.entry.grid(column=0, row=1, sticky="ew")
 
-    def grid(self, column: int, row: int, sticky: str,
-             columnspan=1) -> None:
+    def grid(self, column: int, row: int, sticky: str, columnspan=1) -> None:
         """Placement and behavior on grid."""
         self.mainframe.grid(column=column, row=row, sticky=sticky,
                             columnspan=columnspan)
@@ -120,7 +119,8 @@ class Button:
             submitbutton.grid(row=0, column=1, sticky="e")
 
         By assigning a lambda to the `command` property, clicking the
-        button will print "Form submitted!" to the console.
+        button will print "Form submitted!" to the console in the
+        following example.
 
             submitbutton.command = lambda: print("Form submitted!")
     """
@@ -145,7 +145,22 @@ class Button:
 
 
 class ButtonGroup:
-    """A group of buttons."""
+    """A group of buttons.
+
+    A button group makes it easier to manage a set of buttons in some
+    section of the window.
+
+    Example:
+        Create and manage buttons by passing button text as a key to
+        the button group. Buttons require a command to be useful. The
+        `command` property of a new button can be assigned immediately.
+
+            self.mainframe = ttk.Frame(parent)
+            self.btngrp = ButtonGroup(self.mainframe)
+            self.btngrp["Reset"].command = lambda: print("Reset pressed.")
+            self.btngrp["Add"].command = lambda: print("Add pressed.")
+            self.btngrp.grid(column=0, row=2, sticky="ew", columnspan=2)
+    """
     def __init__(self, parent) -> None:
         self.mainframe = ttk.Frame(parent)
         self.mainframe.columnconfigure(0, weight=1)
@@ -160,8 +175,7 @@ class ButtonGroup:
             self.addbutton(key)
         return self.buttons[key]
 
-    def grid(self, column: int, row: int, sticky: str,
-             columnspan=1) -> None:
+    def grid(self, column: int, row: int, sticky: str, columnspan=1) -> None:
         """Placement and behavior on grid."""
         self.mainframe.grid(column=column, row=row, sticky=sticky,
                              columnspan=columnspan)
@@ -176,7 +190,21 @@ class ButtonGroup:
 
 
 class StatusBar:
-    """Information about the application."""
+    """Information about the application.
+
+    A status bar is typically located at the bottom of a window. Text is
+    displayed notifying the user the current state of the application or
+    of a recent change that occurred.
+
+    Example:
+        Adding a status bar to a window is straighforward. A status bar
+        will most likely located in the last row.
+
+            self.mainframe = ttk.Frame(self.root)
+            self.sbar = StatusBar(self.mainframe)
+            self.sbar.text = "Ready."
+            self.sbar.grid(column=0, row=3, sticky="ew", columnspan=2)
+    """
     def __init__(self, parent) -> None:
         self.mainframe = ttk.Frame(parent)
         self.mainframe.columnconfigure(0, weight=1)
@@ -203,7 +231,7 @@ class StatusBar:
 
 
 class AddInventoryItem:
-    """A form to add items to a database."""
+    """Add items to a database."""
     def __init__(self, parent) -> None:
         self.mainframe = ttk.Frame(parent)
         self.mainframe.columnconfigure(0, weight=1)
