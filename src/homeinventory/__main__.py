@@ -21,6 +21,13 @@ class Application:
 
         self.additemform = AddInventoryItem(self.mainframe)
         self.additemform.grid(column=0, row=0, sticky="nsew")
+        self.additemform.units = ["each", "inches", "feet"]
+        self.additemform.default_unit = "each"
+        self.additemform.reset()
+        def printvalues():
+            print(self.additemform.name, self.additemform.unit,
+                  self.additemform.description)
+        self.additemform.on_add = printvalues
 
         self.statusbar = StatusBar(self.mainframe)
         self.statusbar.text = "Ready."
