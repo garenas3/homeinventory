@@ -27,8 +27,16 @@ class DatabaseNotConnectedError(Exception):
 
 class InventoryDatabase:
     """Interface for the database."""
-    def __init__(self) -> None:
+    def __init__(self, filename: str = "") -> None:
+        """Create database interface."""
         self.connection: sqlite3.Connection | None = None
+        self.filename: str = ""
+        if filename:
+            path = Path(filename)
+            if path.exists():
+                self.open(filename)
+            else:
+                self.create(filename)
 
     def add_inventoryitem(self, name: str, unitid: int,
                           description: str) -> int:
@@ -58,6 +66,7 @@ class InventoryDatabase:
                            " VALUES (?, ?)", units)
         connection.commit()
         self.connection = connection
+        self.filename = filename
 
     def fetchall_inventoryitem(self) -> list[InventoryItem]:
         """Get all inventory items from the database."""
@@ -78,3 +87,4 @@ class InventoryDatabase:
     def open(self, filename: str) -> None:
         """Open the database."""
         self.connection = sqlite3.connect(filename)
+        self.filename = filename

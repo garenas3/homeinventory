@@ -2,13 +2,19 @@ import argparse
 import tkinter as tk
 from tkinter import ttk
 
-from .common import InventoryItem
+from .common import InventoryItem, InventoryItemUnit
+from .database import InventoryDatabase
 from .widgets import AddInventoryItem, StatusBar
 
 
 class Application:
     """Main class to handle GUI."""
     def __init__(self) -> None:
+        self.database = InventoryDatabase(":memory:")
+        self.units: dict[str, InventoryItemUnit] = {
+            u.name: u for u in self.database.fetchall_inventoryitemunit()
+        }
+
         self.root = tk.Tk()
         self.root.title("Home Inventory")
         self.root.columnconfigure(0, weight=1)
@@ -21,13 +27,15 @@ class Application:
 
         self.additemform = AddInventoryItem(self.mainframe)
         self.additemform.grid(column=0, row=0, sticky="nsew")
-        self.additemform.units = ["each", "inches", "feet"]
+        self.additemform.units = [u for u in sorted(self.units.keys())]
         self.additemform.default_unit = "each"
         self.additemform.reset()
-        def printvalues():
-            print(self.additemform.name, self.additemform.unit,
-                  self.additemform.description)
-        self.additemform.on_add = printvalues
+        def addinventoryitem():
+            self.database.add_inventoryitem(
+                self.additemform.name,
+                self.units[self.additemform.unit].unitid,
+                self.additemform.description)
+        self.additemform.on_add = addinventoryitem
 
         self.statusbar = StatusBar(self.mainframe)
         self.statusbar.text = "Ready."
