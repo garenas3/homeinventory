@@ -2,6 +2,8 @@
 from collections.abc import Callable
 from tkinter import ttk
 
+from .common import InventoryItem
+
 
 class LineEdit:
     """A line edit with a label.
@@ -321,3 +323,35 @@ class AddInventoryItem:
         """Update the list of units."""
         self._units = value
         self.unitselect.choices = value
+
+
+class InventoryItemListView:
+    """View the inventory items added to the database."""
+    def __init__(self, parent, labeltext: str) -> None:
+        self.mainframe = ttk.Frame(parent)
+        self.mainframe.columnconfigure(0, weight=1)
+        self.mainframe.rowconfigure(0, weight=1)
+        self.mainframe.rowconfigure(1, weight=1)
+
+        self.label = ttk.Label(self.mainframe, text=labeltext)
+        self.label.grid(column=0, row=0, sticky="w")
+
+        self.listview = ttk.Treeview(self.mainframe, show="tree")
+        self.listview.grid(column=0, row=1, sticky="ew")
+
+        self.inventoryitems: list[InventoryItem] = []
+
+    def append(self, inventoryitem: InventoryItem) -> None:
+        """Add an item to the list."""
+        self.listview.insert("", "end", inventoryitem.itemid, text=inventoryitem.name)
+        self.inventoryitems.append(inventoryitem)
+
+    def clear(self) -> None:
+        """Clear the list of all items."""
+        for inventoryitem in self.inventoryitems:
+            self.listview.delete(inventoryitem.itemid)
+
+    def grid(self, column: int, row: int, sticky: str, columnspan=1) -> None:
+        """Placement and behavior on grid."""
+        self.mainframe.grid(column=column, row=row, sticky=sticky,
+                            columnspan=columnspan)

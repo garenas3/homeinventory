@@ -4,7 +4,7 @@ from tkinter import ttk
 
 from .common import InventoryItem, InventoryItemUnit
 from .database import InventoryDatabase
-from .widgets import AddInventoryItem, StatusBar
+from .widgets import AddInventoryItem, InventoryItemListView, StatusBar
 
 
 class Application:
@@ -24,17 +24,25 @@ class Application:
         self.mainframe.grid(column=0, row=0, sticky="nsew")
         self.mainframe.columnconfigure(0, weight=1)
         self.mainframe.rowconfigure(0, weight=0)
+        self.mainframe.rowconfigure(1, weight=1)
 
         self.additemform = AddInventoryItem(self.mainframe)
         self.additemform.grid(column=0, row=0, sticky="nsew")
         self.additemform.units = [u for u in sorted(self.units.keys())]
         self.additemform.default_unit = "each"
         self.additemform.reset()
+
+        self.inventoryitemview = InventoryItemListView(self.mainframe, "Items")
+        self.inventoryitemview.grid(column=0, row=1, sticky="ew")
+
         def addinventoryitem():
             self.database.add_inventoryitem(
                 self.additemform.name,
                 self.units[self.additemform.unit].unitid,
                 self.additemform.description)
+            self.inventoryitemview.clear()
+            for item in self.database.fetchall_inventoryitem():
+                self.inventoryitemview.append(item)
         self.additemform.on_add = addinventoryitem
 
         self.statusbar = StatusBar(self.mainframe)
