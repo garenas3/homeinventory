@@ -88,14 +88,14 @@ class Application:
 
     def additem(self) -> None:
         """Add an item to the database."""
-        if not self.additemwidget.name:
+        name = self.additemwidget.name.strip()
+        if not name:
             return
         if not self.connection:
             raise NoDatabaseConnectionError
         units = {unit.name: unit for unit in self.units}
-        name = self.additemwidget.name
         unit = units[self.additemwidget.unit]
-        description = self.additemwidget.description
+        description = self.additemwidget.description.strip()
         itemid = database.add_inventoryitem(self.connection, name, unit.unitid,
                                             description)
         self.items.append(InventoryItem(itemid, name, unit, description))
