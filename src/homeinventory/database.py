@@ -1,5 +1,4 @@
 """Manage the home inventory database."""
-from pathlib import Path
 import sqlite3
 
 from .common import InventoryItem, InventoryItemUnit
@@ -21,70 +20,68 @@ CREATE TABLE InventoryItem(
 """
 
 
-class DatabaseNotConnectedError(Exception):
-    pass
+def initialize(connection: sqlite3.Connection):
+    """Initialize the database.
+
+    Create the tables and initial data for a new database. Do not call
+    this function more than once for the life of the database.
+    """
+    cursor = connection.cursor()
+    cursor.executescript(CREATEDB_SQL)
+    units = [("each", "ea"), ("feet", "ft"), ("inches", "in"), ("meters", "m"),
+             ("centimeters", "cm"), ("millimeters", "mm")]
+    cursor.executemany("INSERT INTO InventoryItemUnit(name, symbol)"
+                       " VALUES (?, ?)", units)
+    connection.commit()
 
 
-class InventoryDatabase:
-    """Interface for the database."""
-    def __init__(self, filename: str = "") -> None:
-        """Create database interface."""
-        self.connection: sqlite3.Connection | None = None
-        self.filename: str = ""
-        if filename:
-            path = Path(filename)
-            if path.exists():
-                self.open(filename)
-            else:
-                self.create(filename)
+def fetchall_inventoryitemunit(connection: sqlite3.Connection
+                               ) -> list[InventoryItemUnit]:
+    """Fetch all the units of measure."""
+    cursor = connection.cursor()
+    resultset = cursor.execute("SELECT * FROM InventoryItemUnit")
+    return [InventoryItemUnit(*row) for row in resultset]
 
-    def add_inventoryitem(self, name: str, unitid: int,
-                          description: str) -> int:
-        """Add an inventory item."""
-        if not self.connection:
-            raise DatabaseNotConnectedError
-        cursor = self.connection.execute(
-            "INSERT INTO InventoryItem(name, unitid, description)"
-            " VALUES (?, ?, ?)", (name, unitid, description))
-        self.connection.commit()
-        itemid = cursor.lastrowid
-        if not itemid:
-            raise RuntimeError("Unable to create new InventoryItem record")
-        return itemid
 
-    def create(self, filename: str) -> None:
-        """Create the database if it does not exist."""
-        path = Path(filename)
-        if path.exists():
-            raise RuntimeError(f"File or directory exists: " + filename)
-        connection = sqlite3.connect(filename)
-        cursor = connection.cursor()
-        cursor.executescript(CREATEDB_SQL)
-        units = [("each", "ea"), ("feet", "ft"), ("inches", "in"),
-                 ("centimeters", "cm"), ("millimeters", "mm")]
-        cursor.executemany("INSERT INTO InventoryItemUnit(name, symbol)"
-                           " VALUES (?, ?)", units)
-        connection.commit()
-        self.connection = connection
-        self.filename = filename
+def fetchall_inventoryitem(connection: sqlite3.Connection,
+                           units: dict[int, InventoryItemUnit]
+                           ) -> list[InventoryItem]:
+    """Fetch all inventory items.
 
-    def fetchall_inventoryitem(self) -> list[InventoryItem]:
-        """Get all inventory items from the database."""
-        if not self.connection:
-            raise DatabaseNotConnectedError
-        cursor = self.connection.cursor()
-        resultset = cursor.execute("SELECT * FROM InventoryItem")
-        return [InventoryItem(*row) for row in resultset]
+    Args:
+        connection: The connection to the SQLite database.
+        units: A dictionary of units of measure whose keys are the
+            `unitid` and whose values are the units. These units are
+            used to build the inventory items.
 
-    def fetchall_inventoryitemunit(self) -> list[InventoryItemUnit]:
-        """Get all inventory items from the database."""
-        if not self.connection:
-            raise DatabaseNotConnectedError
-        cursor = self.connection.cursor()
-        resultset = cursor.execute("SELECT * FROM InventoryItemUnit")
-        return [InventoryItemUnit(*row) for row in resultset]
+    Returns:
+        A list of inventory items.
+    """
+    cursor = connection.cursor()
+    resultset = cursor.execute("SELECT * FROM InventoryItem")
+    return [InventoryItem(itemid, name, units[unitid], description)
+            for itemid, name, unitid, description in resultset]
 
-    def open(self, filename: str) -> None:
-        """Open the database."""
-        self.connection = sqlite3.connect(filename)
-        self.filename = filename
+
+def add_inventoryitem(connection: sqlite3.Connection, name: str, unitid: int,
+                      description: str) -> int:
+    """Add an inventory item.
+
+    Args:
+        connection: The connection to the SQLite database.
+        name: A short description of the item.
+        unitid: The unit ID of the unit of measure. This should match a
+            record in the InventoryItemUnit table.
+        description: Additional information about the item.
+
+    Returns:
+        The `itemid` of the item created in the database.
+    """
+    cursor = connection.execute(
+        "INSERT INTO InventoryItem(name, unitid, description)"
+        " VALUES (?, ?, ?)", (name, unitid, description))
+    connection.commit()
+    itemid = cursor.lastrowid
+    if not itemid:
+        raise RuntimeError("Unable to create new InventoryItem record")
+    return itemid
