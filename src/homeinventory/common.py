@@ -16,7 +16,7 @@ class InventoryItem:
     itemid: int
     name: str
     unit: InventoryItemUnit
-    description: str
+    notes: str
 
 
 class InventoryItemBox:

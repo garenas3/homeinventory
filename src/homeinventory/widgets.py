@@ -2,8 +2,10 @@
 from collections.abc import Callable
 from tkinter import ttk
 
+from .common import InventoryItem
 
-class AddItemWidget(ttk.Frame):
+
+class CreateOrUpdateInventoryItemWidget(ttk.Frame):
     """A form used to add items to the database.
     
     Use properties to get current user input values. All properties are
@@ -12,18 +14,19 @@ class AddItemWidget(ttk.Frame):
 
         name
         unit
-        description
+        notes
 
     Callbacks are provided as propreties for the buttons. Set them
     as you would any property. The list of callbacks:
         
         on_reset
-        on_add
+        on_update
+        on_create
 
     Example:
         Add the widget to the application.
 
-            widget = AddItemWidget(root)
+            widget = CreateOrUpdateItemWidget(root)
             widget.grid(column=0, row=0, sticky="ew")
 
         Update list of units. The `units` dictionary uses the unit name
@@ -35,8 +38,8 @@ class AddItemWidget(ttk.Frame):
         Use user input values.
 
             unitid = units[widget.unit]
-            database.add_inventoryitem(widget.name, unitid,
-                                       widget.description)
+            database.create_inventoryitem(widget.name, unitid,
+                                          widget.notes)
 
         Clear all the fields of the widget.
             
@@ -59,53 +62,88 @@ class AddItemWidget(ttk.Frame):
 
         self.name_label = ttk.Label(self, text="Name")
         self.name_label.grid(column=0, row=0, sticky="w")
-        self.name_edit = ttk.Entry(self)
-        self.name_edit.grid(column=0, row=1, sticky="ew")
+        self.name_input = ttk.Entry(self)
+        self.name_input.grid(column=0, row=1, sticky="ew")
 
         self.unit_label = ttk.Label(self, text="Unit of Measure")
         self.unit_label.grid(column=1, row=0, sticky="w", padx=(5,0))
         self.unit_combobox = ttk.Combobox(self)
         self.unit_combobox.grid(column=1, row=1, sticky="ew", padx=(5,0))
 
-        self.description_label = ttk.Label(self, text="Description")
-        self.description_label.grid(column=0, row=3, sticky="w", columnspan=2,
+        self.notes_label = ttk.Label(self, text="Notes")
+        self.notes_label.grid(column=0, row=3, sticky="w", columnspan=2,
                                     pady=(5,0))
-        self.description_edit = ttk.Entry(self)
-        self.description_edit.grid(column=0, row=4, sticky="ew", columnspan=2)
+        self.notes_input = ttk.Entry(self)
+        self.notes_input.grid(column=0, row=4, sticky="ew", columnspan=2)
 
         self.button_frame = ttk.Frame(self)
         self.button_frame.grid(row=5, sticky="ew", columnspan=2, pady=10)
         self.button_frame.columnconfigure(0, weight=1)
         self.reset_button = ttk.Button(self.button_frame, text="Reset")
-        self.reset_button.grid(column=0, row=0, sticky="e")
-        self.add_button = ttk.Button(self.button_frame, text="Add")
-        self.add_button.grid(column=1, row=0, sticky="e", padx=(5,0))
+        self.reset_button.grid(column=0, row=0, sticky="w")
+        self.update_button = ttk.Button(self.button_frame, text="Update")
+        self.update_button.grid(column=1, row=0, sticky="e", padx=(5,0))
+        self.create_button = ttk.Button(self.button_frame, text="Create")
+        self.create_button.grid(column=2, row=0, sticky="e", padx=(5,0))
 
     def clear(self) -> None:
         """Clear the contents of all user inputs."""
-        self.name_edit.delete(0, "end")
+        self.name_input.delete(0, "end")
         self.unit_combobox.set("")
-        self.description_edit.delete(0, "end")
-
-    @property
-    def description(self) -> str:
-        """Current text in description field."""
-        return self.description_edit.get()
+        self.notes_input.delete(0, "end")
 
     @property
     def name(self) -> str:
-        """Current text in description field."""
-        return self.name_edit.get()
+        """Current text in name field."""
+        return self.name_input.get()
+
+    @name.setter
+    def name(self, value) -> None:
+        """Current text in name field."""
+        self.name_input.delete(0, "end")
+        self.name_input.insert(0, value)
 
     @property
-    def on_add(self) -> Callable[[], None]:
-        """Add button callback."""
-        return self.add_button.invoke
+    def notes(self) -> str:
+        """Current text in notes field."""
+        return self.notes_input.get()
 
-    @on_add.setter
-    def on_add(self, value: Callable[[], None]) -> None: 
-        """Add button callback."""
-        self.add_button.configure(command=value)
+    @notes.setter
+    def notes(self, value: str) -> None:
+        """Current text in notes field."""
+        self.notes_input.delete(0, "end")
+        self.notes_input.insert(0, value)
+
+    @property
+    def unit(self) -> str:
+        """Current text in unit field."""
+        return self.unit_combobox.get()
+
+    @unit.setter
+    def unit(self, value: str) -> None:
+        """Current text in unit field."""
+        self.unit_combobox.delete(0, "end")
+        self.unit_combobox.insert(0, value)
+
+    @property
+    def unit_choices(self) -> list[str]:
+        """Choices for units of measure."""
+        return self.unit_combobox.cget("values")
+
+    @unit_choices.setter
+    def unit_choices(self, value: list[str]) -> None:
+        """Choices for units of measure."""
+        self.unit_combobox.configure(values=value)
+
+    @property
+    def on_create(self) -> Callable[[], None]:
+        """Create button callback."""
+        return self.create_button.invoke
+
+    @on_create.setter
+    def on_create(self, value: Callable[[], None]) -> None: 
+        """Create button callback."""
+        self.create_button.configure(command=value)
 
     @property
     def on_reset(self) -> Callable[[], None]:
@@ -118,16 +156,58 @@ class AddItemWidget(ttk.Frame):
         self.reset_button.configure(command=value)
 
     @property
-    def unit(self) -> str:
-        """Current text in description field."""
-        return self.unit_combobox.get()
+    def on_update(self) -> Callable[[], None]:
+        """Update button callback."""
+        return self.update_button.invoke
+
+    @on_update.setter
+    def on_update(self, value: Callable[[], None]) -> None: 
+        """Update button callback."""
+        self.update_button.configure(command=value)
+
+
+class InventoryItemView(ttk.Treeview):
+    """View and select inventory items."""
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        self["show"] = "headings"
+        self["columns"] = ["Name","Unit","Notes"]
+        self.heading("Name", text="Name")
+        self.heading("Unit", text="Unit")
+        self.heading("Notes", text="Notes")
+        self.column("Name", width=100)
+        self.column("Unit", width=100)
+
+        self._on_select: Callable[[], None] = lambda: None
+    
+    def clear_selection(self) -> None:
+        """Clear the current selection."""
+        if self.current_itemid:
+            self.selection_remove(self.current_itemid)
+
+    def refresh(self, items: list[InventoryItem]) -> None:
+        """Refresh the list of items by name in ascending order."""
+        self.delete(*self.get_children())
+        for item in sorted(items, key=lambda item: item.name):
+            self.insert("", "end", item.itemid,
+                        values=(item.name,item.unit.name,item.notes))
 
     @property
-    def unit_choices(self) -> list[str]:
-        """Choices for units of measure."""
-        return self.unit_combobox.cget("values")
+    def current_itemid(self) -> int:
+        """Current selected itemid."""
+        selection_tuple = self.selection()
+        if not selection_tuple:
+            return 0
+        return int(selection_tuple[0])
 
-    @unit_choices.setter
-    def unit_choices(self, value: list[str]) -> None:
-        """Choices for units of measure."""
-        self.unit_combobox.configure(values=value)
+    @property
+    def on_select(self) -> Callable[[], None]:
+        """Selection changed callback."""
+        return self._on_select
+
+    @on_select.setter
+    def on_select(self, value: Callable[[], None]) -> None:
+        """Selection changed callback."""
+        self._on_select = value
+        self.bind("<<TreeviewSelect>>", lambda _: value())

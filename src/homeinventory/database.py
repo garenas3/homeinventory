@@ -4,6 +4,10 @@ import sqlite3
 from .common import InventoryItem, InventoryItemUnit
 
 
+class RecordNotUpdatedError(Exception):
+    pass
+
+
 CREATEDB_SQL = """
 CREATE TABLE InventoryItemUnit(
     unitid INTEGER PRIMARY KEY ASC,
@@ -14,7 +18,7 @@ CREATE TABLE InventoryItem(
     itemid      INTEGER PRIMARY KEY ASC,
     name        TEXT,
     unitid      INTEGER,
-    description TEXT,
+    notes TEXT,
     FOREIGN KEY(unitid) REFERENCES InventoryItemUnit(unitid)
 );
 """
@@ -59,12 +63,12 @@ def fetchall_inventoryitem(connection: sqlite3.Connection,
     """
     cursor = connection.cursor()
     resultset = cursor.execute("SELECT * FROM InventoryItem")
-    return [InventoryItem(itemid, name, units[unitid], description)
-            for itemid, name, unitid, description in resultset]
+    return [InventoryItem(itemid, name, units[unitid], notes)
+            for itemid, name, unitid, notes in resultset]
 
 
-def add_inventoryitem(connection: sqlite3.Connection, name: str, unitid: int,
-                      description: str) -> int:
+def create_inventoryitem(connection: sqlite3.Connection, name: str,
+                         unitid: int, notes: str) -> int:
     """Add an inventory item.
 
     Args:
@@ -72,16 +76,40 @@ def add_inventoryitem(connection: sqlite3.Connection, name: str, unitid: int,
         name: A short description of the item.
         unitid: The unit ID of the unit of measure. This should match a
             record in the InventoryItemUnit table.
-        description: Additional information about the item.
+        notes: Additional information about the item.
 
     Returns:
         The `itemid` of the item created in the database.
     """
     cursor = connection.execute(
-        "INSERT INTO InventoryItem(name, unitid, description)"
-        " VALUES (?, ?, ?)", (name, unitid, description))
+        "INSERT INTO InventoryItem(name, unitid, notes)"
+        " VALUES (?, ?, ?)", (name, unitid, notes))
     connection.commit()
     itemid = cursor.lastrowid
     if not itemid:
         raise RuntimeError("Unable to create new InventoryItem record")
     return itemid
+
+
+def update_inventoryitem(connection: sqlite3.Connection, item: InventoryItem
+                         ) -> None:
+    """Update an inventory item with the matching itemid."""
+    cursor = connection.cursor()
+    cursor.execute(
+        "UPDATE InventoryItem"
+        " SET name = ?, unitid = ?, notes = ?"
+        " WHERE itemid = ?",
+        (item.name, item.unit.unitid, item.notes, item.itemid))
+    connection.commit()
+    if not cursor.rowcount:
+        raise RecordNotUpdatedError()
+
+
+def delete_inventoryitem(connection: sqlite3.Connection, itemid: int
+                         ) -> None:
+    """Delete an inventory item with the matching itemid."""
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM InventoryItem WHERE itemid = ?", (itemid,))
+    connection.commit()
+    if not cursor.rowcount:
+        raise RecordNotUpdatedError()
