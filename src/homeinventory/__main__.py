@@ -30,6 +30,10 @@ class InventoryDatabase():
         """Initialize an in-memory database."""
         self.connection = sqlite3.Connection(":memory:")
         database.initialize(self.connection)
+        
+        for i in range(100):
+            database.create_inventoryitem(self.connection,
+                f"Item {i+1:03}", 1, f"Test item {i+1}")
 
     def init_units(self) -> None:
         """Initialize the `units` member."""
@@ -165,7 +169,7 @@ class ManageItemsPage(ttk.Frame):
         current_item.notes = self.update_item_widget.notes
         self.inventory_database.update_inventoryitem(current_item)
         self.item_view.refresh(self.inventory_database.items)
-        self.item_view.selection_set(current_item.itemid)
+        self.item_view.view.selection_set(current_item.itemid)
 
     def set_update_item_widget_to_current_item(self) -> None:
         """Set the update item fields to current item values."""

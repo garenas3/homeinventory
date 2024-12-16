@@ -1,5 +1,6 @@
 """Custom widgets for GUI."""
 from collections.abc import Callable
+import tkinter as tk
 from tkinter import ttk
 
 from .common import InventoryItem
@@ -166,37 +167,45 @@ class CreateOrUpdateInventoryItemWidget(ttk.Frame):
         self.update_button.configure(command=value)
 
 
-class InventoryItemView(ttk.Treeview):
+class InventoryItemView(ttk.Frame):
     """View and select inventory items."""
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
 
-        self["show"] = "headings"
-        self["columns"] = ["Name","Unit","Notes"]
-        self.heading("Name", text="Name")
-        self.heading("Unit", text="Unit")
-        self.heading("Notes", text="Notes")
-        self.column("Name", width=100)
-        self.column("Unit", width=100)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=0)
+        self.rowconfigure(0, weight=1)
+
+        self.view = ttk.Treeview(self)
+        self.view["show"] = "headings"
+        self.view["columns"] = ["Name","Unit","Notes"]
+        self.view.heading("Name", text="Name")
+        self.view.heading("Unit", text="Unit")
+        self.view.heading("Notes", text="Notes")
+        self.view.column("Name", width=100)
+        self.view.column("Unit", width=100)
+        self.view.grid(column=0, row=0, sticky="nsew")
+
+
+        self.scrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL,
+                                       command=self.view.yview)
+        self.scrollbar.grid(column=1, row=0, sticky="ns")
+
+        self.view["yscrollcommand"] = self.scrollbar.set
 
         self._on_select: Callable[[], None] = lambda: None
-    
-    def clear_selection(self) -> None:
-        """Clear the current selection."""
-        if self.current_itemid:
-            self.selection_remove(self.current_itemid)
 
     def refresh(self, items: list[InventoryItem]) -> None:
         """Refresh the list of items by name in ascending order."""
-        self.delete(*self.get_children())
+        self.view.delete(*self.view.get_children())
         for item in sorted(items, key=lambda item: item.name):
-            self.insert("", "end", item.itemid,
-                        values=(item.name,item.unit.name,item.notes))
+            self.view.insert("", "end", item.itemid,
+                             values=(item.name,item.unit.name,item.notes))
 
     @property
     def current_itemid(self) -> int:
         """Current selected itemid."""
-        selection_tuple = self.selection()
+        selection_tuple = self.view.selection()
         if not selection_tuple:
             return 0
         return int(selection_tuple[0])
@@ -210,4 +219,4 @@ class InventoryItemView(ttk.Treeview):
     def on_select(self, value: Callable[[], None]) -> None:
         """Selection changed callback."""
         self._on_select = value
-        self.bind("<<TreeviewSelect>>", lambda _: value())
+        self.view.bind("<<TreeviewSelect>>", lambda _: value())
