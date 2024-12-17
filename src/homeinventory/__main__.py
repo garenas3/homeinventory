@@ -358,6 +358,18 @@ class Application:
         self.main_notebook.add(self.transact_page, text="Transaction")
         self.main_notebook.add(self.item_page, text="Manage Items")
 
+        self.main_notebook.bind("<<NotebookTabChanged>>", self.on_page_change)
+
+
+    def on_page_change(self, _) -> None:
+        if self.main_notebook.select() == ".!transactionpage":
+            for item in self.inventory_database.items:
+                if item not in (self.transact_page.boxed_items
+                                + self.transact_page.unboxed_items):
+                    self.transact_page.unboxed_items.append(item)
+                    self.transact_page.unboxed_items_view.refresh(
+                            self.transact_page.unboxed_items)
+
     def mainloop(self) -> None:
         """Start the program loop."""
         self.root.mainloop()
