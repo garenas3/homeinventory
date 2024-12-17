@@ -318,7 +318,7 @@ class TransactionPage(ttk.Frame):
         self.refresh_both_item_views()
 
     def on_new_transaction(self) -> None:
-        print("new transaction pressed")
+        pass
 
     def init_boxed_and_unboxed_items(self) -> None:
         self.unboxed_items.extend(self.inventory_database.items)
