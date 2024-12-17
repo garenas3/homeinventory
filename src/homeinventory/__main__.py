@@ -201,6 +201,84 @@ class ManageItemsPage(ttk.Frame):
         self.name_variable.trace_add("write", enable_disable_create_button)
 
 
+class TransactionPage(ttk.Frame):
+    def __init__(self, parent, inventory_database: InventoryDatabase,  **kwargs):
+        super().__init__(parent, **kwargs)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=0)
+
+        # Boxed Items
+
+        self.boxed_items_frame = ttk.Labelframe(self, text="Boxed Items")
+        self.boxed_items_frame.columnconfigure(0, weight=1)
+        self.boxed_items_frame.rowconfigure(0, weight=1)
+        self.boxed_items_frame.rowconfigure(1, weight=0)
+        self.boxed_items_frame.grid(column=0, row=0, sticky="nsew")
+
+        self.boxed_items_view = InventoryItemView(self.boxed_items_frame)
+        self.boxed_items_view.grid(column=0, row=0, sticky="nsew", padx=10,
+                                   pady=(5,0))
+        
+        self.unbox_button = ttk.Button(self.boxed_items_frame, text="Unbox")
+        self.unbox_button.grid(column=0, row=1, sticky="e", padx=10,
+                               pady=(5,10))
+
+        # Unboxed Items
+
+        self.unboxed_items_frame = ttk.Labelframe(self, text="Unboxed Items")
+        self.unboxed_items_frame.columnconfigure(0, weight=1)
+        self.unboxed_items_frame.rowconfigure(0, weight=1)
+        self.unboxed_items_frame.rowconfigure(1, weight=0)
+        self.unboxed_items_frame.grid(column=0, row=1, sticky="nsew",
+                                      pady=(5,0))
+
+        self.unboxed_items_view = InventoryItemView(self.unboxed_items_frame)
+        self.unboxed_items_view.grid(column=0, row=0, sticky="nsew",
+                                     padx=10, pady=(5,10))
+        
+        self.unboxed_items_buttons_frame = ttk.Frame(self.unboxed_items_frame)
+        self.unboxed_items_buttons_frame.columnconfigure(0, weight=0)
+        self.unboxed_items_buttons_frame.columnconfigure(1, weight=0)
+        self.unboxed_items_buttons_frame.rowconfigure(0, weight=0)
+        self.unboxed_items_buttons_frame.grid(column=0, row=1, sticky="e",
+                                              padx=10, pady=(5,10))
+
+        self.box_all_button = ttk.Button(self.unboxed_items_buttons_frame,
+                                         text="Box All")
+        self.box_all_button.grid(column=0, row=0, sticky="e")
+
+        self.box_one_button = ttk.Button(self.unboxed_items_buttons_frame,
+                                         text="Box One")
+        self.box_one_button.grid(column=1, row=0, sticky="e", padx=(5,0))
+
+        # Transaction Control
+
+        self.transact_control_frame = ttk.Labelframe(
+                self, text="Transaction Control")
+        self.transact_control_frame.columnconfigure(0, weight=1)
+        self.transact_control_frame.rowconfigure(0, weight=0)
+        self.transact_control_frame.rowconfigure(1, weight=0)
+        self.transact_control_frame.rowconfigure(2, weight=0)
+        self.transact_control_frame.grid(column=0, row=2, sticky="ew",
+                                         pady=(5,0))
+
+        self.transact_id_label = ttk.Label(self.transact_control_frame,
+                                           text="Transaction ID: ")
+        self.transact_id_label.grid(column=0, row=0, sticky="ew")
+
+        self.items_in_transact_label = ttk.Label(self.transact_control_frame,
+                                           text="Items in Transaction: ")
+        self.items_in_transact_label.grid(column=0, row=1, sticky="ew",
+                                          pady=(5,0))
+
+        self.new_transaction_button = ttk.Button(self.transact_control_frame,
+                                         text="New Transaction")
+        self.new_transaction_button.grid(column=0, row=2, sticky="e",
+                                         padx=10, pady=(5,10))
+
+
 class Application:
     """Main class to handle GUI."""
     def __init__(self) -> None:
@@ -223,6 +301,12 @@ class Application:
         self.item_page = ManageItemsPage(self.root, self.inventory_database,
                                          padding="10 10 10 10")
         self.item_page.grid(column=0, row=0, sticky="nsew")
+
+        self.transact_page = TransactionPage(self.root, self.inventory_database,
+                                             padding="10 10 10 10")
+        self.transact_page.grid(column=0, row=0, sticky="nsew")
+
+        self.main_notebook.add(self.transact_page, text="Transaction")
         self.main_notebook.add(self.item_page, text="Manage Items")
 
     def mainloop(self) -> None:

@@ -202,6 +202,12 @@ class InventoryItemView(ttk.Frame):
             self.view.insert("", "end", item.itemid,
                              values=(item.name,item.unit.name,item.notes))
 
+    def clear_selection(self)-> None:
+        """Clear current selection."""
+        if not self.current_itemid:
+            return
+        self.view.selection_remove(self.view.selection()[0])
+
     @property
     def current_itemid(self) -> int:
         """Current selected itemid."""
