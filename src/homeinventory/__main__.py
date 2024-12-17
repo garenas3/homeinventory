@@ -31,10 +31,6 @@ class InventoryDatabase():
         self.connection = sqlite3.Connection(":memory:")
         database.initialize(self.connection)
         
-        for i in range(100):
-            database.create_inventoryitem(self.connection,
-                f"Item {i+1:03}", 1, f"Test item {i+1}")
-
     def init_units(self) -> None:
         """Initialize the `units` member."""
         if not self.connection:
@@ -204,6 +200,17 @@ class ManageItemsPage(ttk.Frame):
 class TransactionPage(ttk.Frame):
     def __init__(self, parent, inventory_database: InventoryDatabase,  **kwargs):
         super().__init__(parent, **kwargs)
+
+        self.inventory_database = inventory_database
+        self.boxed_items: list[InventoryItem] = []
+        self.unboxed_items: list[InventoryItem] = []
+
+        self.setup_ui()
+        self.setup_callbacks()
+        self.init_boxed_and_unboxed_items()
+        self.refresh_both_item_views()
+
+    def setup_ui(self) -> None:
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
@@ -266,17 +273,59 @@ class TransactionPage(ttk.Frame):
 
         self.transact_id_label = ttk.Label(self.transact_control_frame,
                                            text="Transaction ID: ")
-        self.transact_id_label.grid(column=0, row=0, sticky="ew")
+        self.transact_id_label.grid(column=0, row=0, sticky="ew", padx=10,
+                                    pady=(5,0))
 
         self.items_in_transact_label = ttk.Label(self.transact_control_frame,
-                                           text="Items in Transaction: ")
+                                           text="Moves in Transaction: ")
         self.items_in_transact_label.grid(column=0, row=1, sticky="ew",
-                                          pady=(5,0))
+                                          padx=10, pady=(5,0))
 
         self.new_transaction_button = ttk.Button(self.transact_control_frame,
                                          text="New Transaction")
         self.new_transaction_button.grid(column=0, row=2, sticky="e",
                                          padx=10, pady=(5,10))
+
+    def setup_callbacks(self) -> None:
+        self.unbox_button["command"] = self.on_unbox
+        self.box_one_button["command"] = self.on_box_one
+        self.box_all_button["command"] = self.on_box_all
+        self.new_transaction_button["command"] = self.on_new_transaction
+
+    def on_unbox(self) -> None:
+        current_itemid = self.boxed_items_view.current_itemid
+        if not current_itemid:
+            return
+        items_by_id = self.inventory_database.items_by_id
+        current_item = items_by_id[current_itemid]
+        self.unboxed_items.append(current_item)
+        self.boxed_items.remove(current_item)
+        self.refresh_both_item_views()
+
+    def on_box_one(self) -> None:
+        current_itemid = self.unboxed_items_view.current_itemid
+        if not current_itemid:
+            return
+        items_by_id = self.inventory_database.items_by_id
+        current_item = items_by_id[current_itemid]
+        self.boxed_items.append(current_item)
+        self.unboxed_items.remove(current_item)
+        self.refresh_both_item_views()
+
+    def on_box_all(self) -> None:
+        self.boxed_items.extend(self.unboxed_items)
+        self.unboxed_items.clear()
+        self.refresh_both_item_views()
+
+    def on_new_transaction(self) -> None:
+        print("new transaction pressed")
+
+    def init_boxed_and_unboxed_items(self) -> None:
+        self.unboxed_items.extend(self.inventory_database.items)
+
+    def refresh_both_item_views(self) -> None:
+        self.boxed_items_view.refresh(self.boxed_items)
+        self.unboxed_items_view.refresh(self.unboxed_items)
 
 
 class Application:

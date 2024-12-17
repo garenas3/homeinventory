@@ -15,11 +15,22 @@ CREATE TABLE InventoryItemUnit(
     symbol TEXT
 );
 CREATE TABLE InventoryItem(
-    itemid      INTEGER PRIMARY KEY ASC,
-    name        TEXT,
-    unitid      INTEGER,
-    notes TEXT,
+    itemid INTEGER PRIMARY KEY ASC,
+    name   TEXT,
+    unitid INTEGER,
+    notes  TEXT,
     FOREIGN KEY(unitid) REFERENCES InventoryItemUnit(unitid)
+);
+CREATE TABLE InventoryTransaction(
+    transactid INTEGER PRIMARY KEY ASC
+);
+CREATE TABLE InventoryTransactionMove(
+    moveid     INTEGER PRIMARY KEY ASC,
+    transactid INTEGER,
+    itemid     INTEGER,
+    boxed      INTEGER, -- BOOL
+    FOREIGN KEY(transactid) REFERENCES InventoryTransaction(transactid)
+    FOREIGN KEY(itemid) REFERENCES InventoryItem(itemid)
 );
 """
 
@@ -36,6 +47,7 @@ def initialize(connection: sqlite3.Connection):
              ("centimeters", "cm"), ("millimeters", "mm")]
     cursor.executemany("INSERT INTO InventoryItemUnit(name, symbol)"
                        " VALUES (?, ?)", units)
+    cursor.execute("INSERT INTO InventoryTransaction DEFAULT VALUES")
     connection.commit()
 
 
@@ -113,3 +125,33 @@ def delete_inventoryitem(connection: sqlite3.Connection, itemid: int
     connection.commit()
     if not cursor.rowcount:
         raise RecordNotUpdatedError()
+
+
+def create_inventorytransaction(connection: sqlite3.Connection) -> int:
+    """Create a new inventory transaction.
+
+    Args:
+        connection: A connection to a SQLite database.
+
+    Returns:
+        The `transactid` of the new transaction.
+    """
+    cursor = connection.execute(
+            "INSERT INTO InventoryTransaction DEFAULT VALUES")
+    connection.commit()
+    transactid = cursor.lastrowid
+    if not transactid:
+        raise RuntimeError("Unable to create new InventoryTransaction record")
+    return transactid
+
+
+def current_inventorytransaction(connection: sqlite3.Connection) -> int:
+    """Get the current transactid."""
+    cursor = connection.cursor()
+    cursor.execute("SELECT transactid"
+                   " FROM InventoryTransaction"
+                   " ORDER BY InventoryTransaction DESC")
+    row = cursor.fetchone()
+    if not row:
+        raise RuntimeError("Error on fetch current InventoryTransaction")
+    return row[0]
