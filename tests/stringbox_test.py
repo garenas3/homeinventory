@@ -1,6 +1,7 @@
 import pytest
 
-from homeinventory import StringBox, exportcsv, searchboxes, importcsv
+from homeinventory.stringbox import StringBox
+from homeinventory.stringbox import exportcsv, importcsv, searchboxes
 
 
 def test_newbox_empty():
