@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A simple home inventory system."
 authors = ["Gabe Arenas <garenas@unomaha.edu>"]
 readme = "README.md"
-license = "MIT"
+license = "GPL-3.0-or-later"
 packages = [{include = "homeinventory", from = "src"}]
 
 [tool.poetry.dependencies]
