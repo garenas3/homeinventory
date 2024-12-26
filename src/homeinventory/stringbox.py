@@ -2,7 +2,7 @@
 
 Import the project to begin.
 
->>> import homeinventory.stringbox
+>>> import homeinventory.stringbox as stringbox
 >>> from homeinventory.stringbox import StringBox
 
 Create a box with a useful naming convention. For example, consider
@@ -49,21 +49,21 @@ case-insensitive search.
 The module level search method can be used to search multiple boxes at
 once.
 
->>> homeinventory.searchboxes([fruit_box, nuts_box], "hazelnuts")
+>>> stringbox.searchboxes([fruit_box, nuts_box], "hazelnuts")
 {'Fruit': ['Hazelnuts'], 'Nuts': ['Hazelnuts']}
 
 For a home inventory system like this to be useful, it must be saved to
 a file. Save the information to a CSV file using the `exportcsv`
 function.
 
->>> homeinventory.exportcsv(  # doctest:+SKIP
+>>> stringbox.exportcsv(  # doctest:+SKIP
 ...     "inventory.csv", 
 ...     [fruit_box, nuts_box]
 ... )
 
 Use the `load` function to resume working at a later date.
 
->>> inventory = homeinventory.importcsv("inventory.csv")  # doctest:+SKIP
+>>> inventory = stringbox.importcsv("inventory.csv")  # doctest:+SKIP
 >>> inventory  # doctest:+SKIP
 {'Fruit': StringBox(name='Fruit', items=[...]), 'Nuts': StringBox(...)}
 """

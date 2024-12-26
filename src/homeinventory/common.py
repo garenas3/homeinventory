@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class InventoryItemUnit:
     """Unit of measure for an item."""
     unitid: int
@@ -10,16 +10,10 @@ class InventoryItemUnit:
     symbol: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class InventoryItem:
     """Attributes to describe an item."""
     itemid: int
     name: str
     unit: InventoryItemUnit
     notes: str
-
-
-class InventoryItemBox:
-    """A collection of items stored in a box."""
-    def __init__(self) -> None:
-        pass

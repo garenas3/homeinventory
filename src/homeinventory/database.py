@@ -8,6 +8,14 @@ class RecordNotUpdatedError(Exception):
     pass
 
 
+class RecordNotDeletedError(Exception):
+    pass
+
+
+class NoCurrentInventoryTransactionError(Exception):
+    pass
+
+
 CREATEDB_SQL = """
 CREATE TABLE InventoryItemUnit(
     unitid INTEGER PRIMARY KEY ASC,
@@ -22,24 +30,22 @@ CREATE TABLE InventoryItem(
     FOREIGN KEY(unitid) REFERENCES InventoryItemUnit(unitid)
 );
 CREATE TABLE InventoryTransaction(
-    transactid INTEGER PRIMARY KEY ASC
-);
-CREATE TABLE InventoryTransactionMove(
-    moveid     INTEGER PRIMARY KEY ASC,
-    transactid INTEGER,
-    itemid     INTEGER,
-    boxed      INTEGER, -- BOOL
-    FOREIGN KEY(transactid) REFERENCES InventoryTransaction(transactid)
-    FOREIGN KEY(itemid) REFERENCES InventoryItem(itemid)
+    transactionid INTEGER PRIMARY KEY ASC
 );
 """
 
 
-def initialize(connection: sqlite3.Connection):
+def initialize(connection: sqlite3.Connection) -> None:
     """Initialize the database.
 
-    Create the tables and initial data for a new database. Do not call
+    Create tables and initialize data for a new database. Do not call
     this function more than once for the life of the database.
+
+    Some state is guaranteed on creation. The "each" unit will always
+    have a `unitid` of 1. No other `unitid` value is guaranteed. Common
+    lengths are added for convenience. The first inventory transaction
+    with a `transactionid` of 1 will be initiated. The current
+    `transactionid` will always be the largest `transactionid`.
     """
     cursor = connection.cursor()
     cursor.executescript(CREATEDB_SQL)
@@ -103,15 +109,15 @@ def create_inventoryitem(connection: sqlite3.Connection, name: str,
     return itemid
 
 
-def update_inventoryitem(connection: sqlite3.Connection, item: InventoryItem
-                         ) -> None:
+def update_inventoryitem(connection: sqlite3.Connection, itemid: int,
+                         name: str, unitid: int, notes: str) -> None:
     """Update an inventory item with the matching itemid."""
     cursor = connection.cursor()
     cursor.execute(
         "UPDATE InventoryItem"
         " SET name = ?, unitid = ?, notes = ?"
         " WHERE itemid = ?",
-        (item.name, item.unit.unitid, item.notes, item.itemid))
+        (name, unitid, notes, itemid))
     connection.commit()
     if not cursor.rowcount:
         raise RecordNotUpdatedError()
@@ -124,7 +130,7 @@ def delete_inventoryitem(connection: sqlite3.Connection, itemid: int
     cursor.execute("DELETE FROM InventoryItem WHERE itemid = ?", (itemid,))
     connection.commit()
     if not cursor.rowcount:
-        raise RecordNotUpdatedError()
+        raise RecordNotDeletedError()
 
 
 def create_inventorytransaction(connection: sqlite3.Connection) -> int:
@@ -134,7 +140,7 @@ def create_inventorytransaction(connection: sqlite3.Connection) -> int:
         connection: A connection to a SQLite database.
 
     Returns:
-        The `transactid` of the new transaction.
+        The `transactionid` of the new transaction.
     """
     cursor = connection.execute(
             "INSERT INTO InventoryTransaction DEFAULT VALUES")
@@ -148,10 +154,11 @@ def create_inventorytransaction(connection: sqlite3.Connection) -> int:
 def current_inventorytransaction(connection: sqlite3.Connection) -> int:
     """Get the current transactid."""
     cursor = connection.cursor()
-    cursor.execute("SELECT transactid"
+    cursor.execute("SELECT transactionid"
                    " FROM InventoryTransaction"
-                   " ORDER BY InventoryTransaction DESC")
+                   " ORDER BY transactionid DESC"
+                   " LIMIT 1")
     row = cursor.fetchone()
     if not row:
-        raise RuntimeError("Error on fetch current InventoryTransaction")
+        raise NoCurrentInventoryTransactionError
     return row[0]
